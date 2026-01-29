@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voyage Curated | Sophisticated Travel Discovery</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Contact Modal Styles */
+        .contact-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .contact-modal.active {
+            display: flex;
+            opacity: 1;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+        }
+
+        .contact-modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--charcoal);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--accent);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .contact-form {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--charcoal);
+            font-weight: 500;
+            font-size: 0.9375rem;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 1rem;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-dark);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(109, 140, 138, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .contact-info-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .contact-info-item i {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .contact-info-item h4 {
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            color: var(--charcoal);
+        }
+
+        .contact-info-item p {
+            font-size: 0.875rem;
+            margin: 0;
+            color: var(--text-light);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Success message */
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .success-message i {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        .success-message h4 {
+            margin-bottom: 1rem;
+            color: var(--charcoal);
+        }
+
+        .success-message p {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Error styling */
+        .form-input.error, .form-textarea.error {
+            border-color: #ff6b6b;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        /* Home page specific styles */
+        .hero-image {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin: 3rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin: 4rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .testimonial {
+            font-style: italic;
+            color: var(--text-dark);
+            font-size: 1.25rem;
+            line-height: 1.8;
+            text-align: center;
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .testimonial::before,
+        .testimonial::after {
+            content: '"';
+            font-size: 4rem;
+            color: var(--accent);
+            opacity: 0.2;
+            position: absolute;
+            font-family: Georgia, serif;
+        }
+
+        .testimonial::before {
+            top: -1rem;
+            left: -1rem;
+        }
+
+        .testimonial::after {
+            bottom: -2rem;
+            right: -1rem;
+        }
+
+        .quote-author {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            font-style: normal;
+        }
+
+        /* SIMPLE PROFILE PHOTO - NO EFFECTS, NO BORDER */
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 5rem 2rem 4rem;
+            position: relative;
+            background: linear-gradient(to bottom, #ffffff 0%, var(--ivory) 100%);
+        }
+
+        .profile-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 2rem;
+            /* NO BORDER, NO SHADOW, NO TRANSITIONS */
+            border: none;
+            display: block;
+        }
+        .site-title {
+            text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.5),
+            0px -1px 0px rgba(0, 0, 0, 0.3),
+            2px 2px 3px rgba(47, 124, 12, 0.74),
+            4px 4px 8px rgba(7, 209, 0, 0.2);
+        }
+
+        /* Destination List Section */
+        .destination-list-section {
+            background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+            padding: 4rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .destination-list-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .destination-categories {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .category-column h4 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .destination-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            color: var(--text-light);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .destination-item:last-child {
+            border-bottom: none;
+        }
+
+        .destination-item i {
+            color: var(--accent);
+            font-size: 0.75rem;
+        }
+
+        .destination-item:hover {
+            color: var(--accent);
+            transform: translateX(5px);
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero-image {
+                height: 300px;
+            }
+
+            .profile-circle {
+                width: 120px;
+                height: 120px;
+            }
+
+            .destination-categories {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .destination-list-container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header with Profile Photo Above Title - SIMPLE VERSION -->
+<header class="profile-header">
+    <img src="images/photo.jpg" alt="Professional Profile" class="profile-circle">
+    <div class="header-content">
+        <h1 class="site-title">Voyage Curated</h1>
+        <p class="tagline">Sophisticated travel discovery for discerning explorers. Uncovering authentic experiences through meticulous curation.</p>
+    </div>
+</header>
+
+<!-- Minimalist Navigation -->
+<nav class="site-nav">
+    <div class="nav-container">
+        <ul class="nav-menu">
+            <li><a href="index.html" class="nav-link active">Home</a></li>
+            <li><a href="destinations.html" class="nav-link">Destinations</a></li>
+            <li><a href="picker.html" class="nav-link">Destination Picker</a></li>
+            <li><a href="experience.html" class="nav-link">Experiences</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- QR Code -->
+<div class="qr-container">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://github.com/yourusername/voyage-curated"
+         alt="GitHub Repository" class="qr-code">
+    <div class="qr-label">GitHub Source</div>
+</div>
+
+<!-- Hero Image Section -->
+<main>
+    <section class="container">
+        <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80"
+             alt="Travel Inspiration" class="hero-image">
+
+        <div class="section">
+            <h2 class="section-title">Curated Travel Intelligence</h2>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-number">30</div>
+                    <div class="stat-label">Destinations</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">2.4K</div>
+                    <div class="stat-label">Curated Experiences</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Satisfaction Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Destination List Section -->
+    <section class="destination-list-section">
+        <div class="destination-list-container">
+            <h2 class="section-title">Our Curated Destination Collection</h2>
+            <p class="tagline" style="max-width: 800px; margin: 0 auto 3rem;">Discover our meticulously selected portfolio of 30 sophisticated destinations across the globe, each offering unique character and refined experiences.</p>
+
+            <div class="destination-categories">
+                <!-- Europe -->
+                <div class="category-column">
+                    <h4>Europe</h4>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Paris, France</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Swiss Alps, Switzerland</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Amalfi Coast, Italy</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Barcelona, Spain</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Santorini, Greece</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> London, UK</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Provence, France</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Prague, Czech Republic</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Vienna, Austria</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Edinburgh, Scotland</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Lisbon, Portugal</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Berlin, Germany</div>
+                </div>
+
+                <!-- Asia & Middle East -->
+                <div class="category-column">
+                    <h4>Asia & Middle East</h4>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Kyoto, Japan</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Tokyo, Japan</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Bali, Indonesia</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Seoul, South Korea</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Hong Kong, China</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Bangkok, Thailand</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Hanoi, Vietnam</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Dubai, UAE</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Istanbul, Turkey</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Singapore</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Marrakech, Morocco</div>
+                </div>
+
+                <!-- Americas & Oceania -->
+                <div class="category-column">
+                    <h4>Americas & Oceania</h4>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> New York, USA</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Vancouver, Canada</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Rio de Janeiro, Brazil</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Sydney, Australia</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Cape Town, South Africa</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Queenstown, New Zealand</div>
+                    <div class="destination-item"><i class="fas fa-map-marker-alt"></i> Reykjavik, Iceland</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Destinations -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Featured Destinations</h2>
+            <div class="featured-grid">
+                <article class="featured-card">
+                    <img src="https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                         alt="Kyoto, Japan" class="card-image">
+                    <div class="card-content">
+                        <div class="card-meta">
+                            <span>Japan</span>
+                            <span>Cultural Heritage</span>
+                        </div>
+                        <h3>Kyoto</h3>
+                        <p>Ancient temples meet modern sophistication. Discover the harmonious blend of tradition and innovation in Japan's cultural heart.</p>
+                    </div>
+                </article>
+
+                <article class="featured-card">
+                    <img src="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                         alt="Swiss Alps" class="card-image">
+                    <div class="card-content">
+                        <div class="card-meta">
+                            <span>Switzerland</span>
+                            <span>Alpine Luxury</span>
+                        </div>
+                        <h3>Swiss Alps</h3>
+                        <p>Pristine landscapes and sophisticated mountain retreats. Experience alpine luxury with unparalleled natural beauty.</p>
+                    </div>
+                </article>
+
+                <article class="featured-card">
+                    <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+                         alt="Amalfi Coast" class="card-image">
+                    <div class="card-content">
+                        <div class="card-meta">
+                            <span>Italy</span>
+                            <span>Coastal Elegance</span>
+                        </div>
+                        <h3>Amalfi Coast</h3>
+                        <p>Dramatic cliffs meet Mediterranean sophistication. Experience la dolce vita along Italy's most celebrated coastline.</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Table -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Destination Intelligence</h2>
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>Destination</th>
+                    <th>Best Season</th>
+                    <th>Sophistication Level</th>
+                    <th>Average Stay</th>
+                    <th>Cultural Depth</th>
+                    <th>Accessibility</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><strong>Kyoto, Japan</strong></td>
+                    <td>Spring / Autumn</td>
+                    <td>9.8/10</td>
+                    <td>5-7 days</td>
+                    <td>Exceptional</td>
+                    <td>Easy</td>
+                </tr>
+                <tr>
+                    <td><strong>Swiss Alps</strong></td>
+                    <td>Winter / Summer</td>
+                    <td>9.5/10</td>
+                    <td>7-10 days</td>
+                    <td>Moderate</td>
+                    <td>Moderate</td>
+                </tr>
+                <tr>
+                    <td><strong>Amalfi Coast</strong></td>
+                    <td>Spring / Early Autumn</td>
+                    <td>9.2/10</td>
+                    <td>4-6 days</td>
+                    <td>High</td>
+                    <td>Moderate</td>
+                </tr>
+                <tr>
+                    <td><strong>Paris, France</strong></td>
+                    <td>Spring / Autumn</td>
+                    <td>9.7/10</td>
+                    <td>4-5 days</td>
+                    <td>Exceptional</td>
+                    <td>Easy</td>
+                </tr>
+                <tr>
+                    <td><strong>Marrakech, Morocco</strong></td>
+                    <td>Autumn / Spring</td>
+                    <td>8.9/10</td>
+                    <td>3-5 days</td>
+                    <td>High</td>
+                    <td>Easy</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Testimonial -->
+    <section class="section">
+        <div class="container">
+            <blockquote class="testimonial">
+                Voyage Curated transformed how I experience travel. Their sophisticated approach to discovery goes beyond typical recommendations, offering authentic, meaningful experiences that resonate with discerning travelers.
+            </blockquote>
+            <p class="quote-author">— Alexander Chen, Travel Connoisseur</p>
+        </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <div class="container">
+        <div class="button-group">
+            <button onclick="scrollToTop()" class="btn btn-primary">
+                <i class="fas fa-arrow-up"></i> Return to Top
+            </button>
+
+            <button class="btn btn-secondary" onclick="openContactModal()">
+                <i class="fas fa-envelope"></i> Contact Us
+            </button>
+
+
+            <a href="picker.html" class="btn btn-primary">
+                <i class="fas fa-compass"></i> Find Your Destination
+            </a>
+
+            <a href="destinations.html" class="btn btn-secondary">
+                <i class="fas fa-globe"></i> Browse All Destinations
+            </a>
+        </div>
+    </div>
+    <!-- Contact Modal -->
+    <div class="contact-modal" id="contactModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Contact Voyage Curated</h3>
+                <button class="close-modal" onclick="closeContactModal()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Success Message (Hidden by default) -->
+                <div class="success-message" id="successMessage">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Message Sent Successfully!</h4>
+                    <p>Thank you for contacting Voyage Curated. We'll respond to your inquiry within 24 hours.</p>
+                    <button class="btn btn-primary" onclick="closeContactModal()">Close</button>
+                </div>
+
+                <!-- Contact Form -->
+                <form class="contact-form" id="contactForm" style="display: block;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName" class="form-label">First Name *</label>
+                            <input type="text" id="firstName" class="form-input" required>
+                            <div class="error-message" id="firstNameError">Please enter your first name</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName" class="form-label">Last Name *</label>
+                            <input type="text" id="lastName" class="form-input" required>
+                            <div class="error-message" id="lastNameError">Please enter your last name</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address *</label>
+                        <input type="email" id="email" class="form-input" required>
+                        <div class="error-message" id="emailError">Please enter a valid email address</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" id="phone" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject" class="form-label">Subject *</label>
+                        <select id="subject" class="form-input" required>
+                            <option value="">Select a subject</option>
+                            <option value="general">General Inquiry</option>
+                            <option value="booking">Travel Booking</option>
+                            <option value="custom">Custom Experience</option>
+                            <option value="partnership">Partnership</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div class="error-message" id="subjectError">Please select a subject</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message" class="form-label">Your Message *</label>
+                        <textarea id="message" class="form-textarea" required placeholder="Tell us about your travel interests, preferred destinations, and any specific requirements..."></textarea>
+                        <div class="error-message" id="messageError">Please enter your message</div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeContactModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span id="submitText">Send Message</span>
+                            <span id="submitLoading" style="display: none;">
+                            <span class="loading-spinner"></span> Sending...
+                        </span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="contact-info">
+                    <div class="contact-info-item">
+                        <i class="fas fa-envelope"></i>
+                        <h4>Email</h4>
+                        <p>professional@voyagecurated.com</p>
+                    </div>
+
+                    <div class="contact-info-item">
+                        <i class="fas fa-phone"></i>
+                        <h4>Phone</h4>
+                        <p>+1 (555) 123-4567</p>
+                    </div>
+
+                    <div class="contact-info-item">
+                        <i class="fas fa-clock"></i>
+                        <h4>Response Time</h4>
+                        <p>Within 24 hours</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-content">
+        <!-- ASCII Art -->
+        <div class="ascii-art">
+            __
+            ____________ __  _  _______    ____   ____   _____  |  | ______  __ __________
+            \_  __ \__  \\ \/ \/ /\__  \  /    \_/ __ \  \__  \ |  |/ /  _ \|  |  \___   /
+            |  | \// __ \\     /  / __ \|   |  \  ___/   / __ \|    <   )  |  //    /
+            |__|  (____  /\/\_/  (____  /___|  /\___  > (____  /__|_ \____/|____//_____ \
+            \/             \/     \/     \/       \/     \/                 \/
+        </div>
+
+        <p class="copyright">© rawane akouz. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    // Scroll to top function
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Table row hover effect
+    document.querySelectorAll('.data-table tr').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transition = 'background-color 0.2s ease';
+        });
+    });
+
+    // Card hover animation
+    document.querySelectorAll('.featured-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const image = this.querySelector('.card-image');
+            if (image) {
+                image.style.transform = 'scale(1.05)';
+                image.style.transition = 'transform 0.5s ease';
+            }
+        });
+
+        card.addEventListener('mouseleave', function() {
+            const image = this.querySelector('.card-image');
+            if (image) {
+                image.style.transform = 'scale(1)';
+            }
+        });
+    });
+
+    // Initialize - REMOVED IMAGE LOADING EFFECTS
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Voyage Curated - Sophisticated Travel Guide loaded successfully.');
+    });
+    // Contact Modal Functions
+    function openContactModal() {
+        document.getElementById('contactModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeContactModal() {
+        document.getElementById('contactModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        resetContactForm();
+    }
+
+    function resetContactForm() {
+        document.getElementById('contactForm').reset();
+        document.getElementById('contactForm').style.display = 'block';
+        document.getElementById('successMessage').style.display = 'none';
+
+        // Remove error states
+        document.querySelectorAll('.form-input, .form-textarea').forEach(input => {
+            input.classList.remove('error');
+        });
+        document.querySelectorAll('.error-message').forEach(error => {
+            error.style.display = 'none';
+        });
+
+        // Reset submit button
+        document.getElementById('submitText').style.display = 'inline';
+        document.getElementById('submitLoading').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('contactModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeContactModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('contactModal').classList.contains('active')) {
+            closeContactModal();
+        }
+    });
+
+    // Form validation and submission
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Validate form
+        if (validateContactForm()) {
+            // Show loading state
+            document.getElementById('submitText').style.display = 'none';
+            document.getElementById('submitLoading').style.display = 'inline';
+            document.getElementById('submitBtn').disabled = true;
+
+            // Simulate API call
+            setTimeout(() => {
+                // Show success message
+                document.getElementById('contactForm').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+
+                // In a real application, you would send the data to your server here
+                const formData = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    subject: document.getElementById('subject').value,
+                    message: document.getElementById('message').value,
+                    timestamp: new Date().toISOString()
+                };
+
+                console.log('Contact form submitted:', formData);
+
+                // Optionally: Send to your backend
+                // fetch('/api/contact', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(formData)
+                // })
+
+            }, 1500);
+        }
+    });
+
+    function validateContactForm() {
+        let isValid = true;
+
+        // Clear previous errors
+        document.querySelectorAll('.form-input, .form-textarea').forEach(input => {
+            input.classList.remove('error');
+        });
+        document.querySelectorAll('.error-message').forEach(error => {
+            error.style.display = 'none';
+        });
+
+        // Validate required fields
+        const firstName = document.getElementById('firstName');
+        if (!firstName.value.trim()) {
+            firstName.classList.add('error');
+            document.getElementById('firstNameError').style.display = 'block';
+            isValid = false;
+        }
+
+        const lastName = document.getElementById('lastName');
+        if (!lastName.value.trim()) {
+            lastName.classList.add('error');
+            document.getElementById('lastNameError').style.display = 'block';
+            isValid = false;
+        }
+
+        const email = document.getElementById('email');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.value.trim() || !emailRegex.test(email.value)) {
+            email.classList.add('error');
+            document.getElementById('emailError').style.display = 'block';
+            isValid = false;
+        }
+
+        const subject = document.getElementById('subject');
+        if (!subject.value) {
+            subject.classList.add('error');
+            document.getElementById('subjectError').style.display = 'block';
+            isValid = false;
+        }
+
+        const message = document.getElementById('message');
+        if (!message.value.trim()) {
+            message.classList.add('error');
+            document.getElementById('messageError').style.display = 'block';
+            isValid = false;
+        }
+
+        return isValid;
+    }
+</script>
+</body>
+</html>
